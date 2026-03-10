@@ -1,0 +1,104 @@
+# Professional .gitignore for Node + Vite + React projects
+# Generated for KartikeshPortfolio
+
+# Node dependencies
+/node_modules/
+
+# Build output
+/dist/
+/build/
+/.output/
+
+# Vite
+/.vite/
+.vite/
+.vite-deps/
+
+# Cache folders
+/.cache/
+/.parcel-cache/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+logs/
+*.log
+
+# Environment variables
+.env
+.env.*.local
+.env.local
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Editor directories and files
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# OS generated files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Coverage directories
+/coverage/
+coverage-final.json
+lcov-report/
+*.lcov
+
+# Test output
+/jest/coverage/
+jest.config.js
+
+# Misc
+*.pem
+*.key
+*.crt
+*.p12
+
+# Yarn v2/v3
+.yarn/cache/
+.yarn/unplugged/
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+.yarnrc.yml
+
+# pnpm
+.pnpm-debug.log
+.pnpm-store/
+
+# Debug
+debug.log*
+
+# Generated assets (image optimizers, build artifacts)
+*.bundle.js
+*.bundle.js.map
+
+# Dependency directories for other package managers
+bower_components/
+
+# IDE local history
+.history/
+
+# macOS Finder attributes
+.AppleDouble
+.LSOverride
+
+# Optional npm cache folder
+.npm/
+
+# Lockfiles (you may wish to keep these committed; uncomment to ignore)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# Allow keeping public as it's project content
+# /public/
+
+# End of file
