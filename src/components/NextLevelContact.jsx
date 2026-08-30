@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
-import { Mail, Linkedin, Github, Send, Copy, Check, Gamepad2, ArrowUp } from 'lucide-react';
+import { Mail, Linkedin, Github, Send, Copy, Check, Gamepad2, ArrowUp, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
 import { sfx } from '../utils/soundEffects';
 import TextScramble from './TextScramble';
 
@@ -8,7 +8,9 @@ const NextLevelContact = ({ onBackToTop }) => {
   const sectionRef = useRef(null);
   const isInView = useInView(sectionRef, { once: true, margin: '-80px' });
   const [copied, setCopied] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formSubmitted, setFormSubmitted] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
 
   const emailAddress = 'kartibelamkar@gmail.com';
@@ -20,15 +22,54 @@ const NextLevelContact = ({ onBackToTop }) => {
     setTimeout(() => setCopied(false), 2500);
   };
 
-  const handleFormSubmit = (e) => {
+  const handleFormSubmit = async (e) => {
     e.preventDefault();
-    sfx.playSting();
-    setFormSubmitted(true);
-    setTimeout(() => {
-      setFormSubmitted(false);
-      setFormData({ name: '', email: '', message: '' });
-    }, 4000);
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+    setErrorMessage('');
+    sfx.playClick();
+
+    try {
+      const response = await fetch(`https://formsubmit.co/ajax/${emailAddress}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          message: formData.message,
+          _subject: `Transmission from ${formData.name} (Portfolio Inquiry)`,
+          _template: 'table',
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && (data.success === 'true' || data.success === true)) {
+        sfx.playSting();
+        setFormSubmitted(true);
+        setFormData({ name: '', email: '', message: '' });
+      } else {
+        throw new Error(data.message || 'Signal transmission failed.');
+      }
+    } catch (err) {
+      console.error('Form submission error:', err);
+      setErrorMessage(
+        'Automated dispatch encountered an issue. You can launch your email client directly with your message.'
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  const mailtoFallbackUrl = `mailto:${emailAddress}?subject=${encodeURIComponent(
+    `Transmission from ${formData.name || 'Portfolio Visitor'}`
+  )}&body=${encodeURIComponent(
+    `Name: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`
+  )}`;
 
   return (
     <section
@@ -166,7 +207,7 @@ const NextLevelContact = ({ onBackToTop }) => {
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="py-12 text-center space-y-3"
+                  className="py-12 text-center space-y-4"
                 >
                   <div className="w-12 h-12 rounded-full bg-ember/20 border border-ember text-ember flex items-center justify-center mx-auto shadow-[0_0_20px_rgba(255,107,26,0.5)]">
                     <Check size={24} />
@@ -177,9 +218,40 @@ const NextLevelContact = ({ onBackToTop }) => {
                   <p className="font-mono text-xs text-cinematic-muted max-w-sm mx-auto">
                     Signal received. Kartikesh will inspect your communication and respond shortly.
                   </p>
+                  <button
+                    onClick={() => {
+                      sfx.playClick();
+                      setFormSubmitted(false);
+                    }}
+                    onMouseEnter={() => sfx.playHover()}
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-void-800 hover:bg-ember hover:text-void-950 text-cinematic-silver border border-cinematic-border font-mono text-xs transition-colors mt-2"
+                  >
+                    <RefreshCw size={13} />
+                    <span>TRANSMIT ANOTHER MESSAGE</span>
+                  </button>
                 </motion.div>
               ) : (
                 <form onSubmit={handleFormSubmit} className="space-y-4">
+                  {errorMessage && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="p-3 bg-red-950/40 border border-red-500/50 text-red-300 font-mono text-xs space-y-2"
+                    >
+                      <div className="flex items-start gap-2">
+                        <AlertCircle size={15} className="text-red-400 mt-0.5 shrink-0" />
+                        <span>{errorMessage}</span>
+                      </div>
+                      <a
+                        href={mailtoFallbackUrl}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-500/20 hover:bg-red-500 text-white font-mono text-[11px] uppercase tracking-wider transition-colors border border-red-500/40"
+                      >
+                        <Mail size={12} />
+                        <span>LAUNCH EMAIL CLIENT</span>
+                      </a>
+                    </motion.div>
+                  )}
+
                   <div>
                     <label className="block font-mono text-[10px] text-cinematic-darkMuted uppercase mb-1.5">
                       SENDER NAME
@@ -187,10 +259,11 @@ const NextLevelContact = ({ onBackToTop }) => {
                     <input
                       type="text"
                       required
+                      disabled={isSubmitting}
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       placeholder="Your name or studio"
-                      className="w-full bg-void-950 border border-cinematic-border focus:border-ember focus:ring-1 focus:ring-ember px-4 py-2.5 font-mono text-xs text-cinematic-white placeholder-cinematic-darkMuted outline-none transition-colors"
+                      className="w-full bg-void-950 border border-cinematic-border focus:border-ember focus:ring-1 focus:ring-ember px-4 py-2.5 font-mono text-xs text-cinematic-white placeholder-cinematic-darkMuted outline-none transition-colors disabled:opacity-50"
                     />
                   </div>
 
@@ -201,10 +274,11 @@ const NextLevelContact = ({ onBackToTop }) => {
                     <input
                       type="email"
                       required
+                      disabled={isSubmitting}
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       placeholder="alex@gamestudio.com"
-                      className="w-full bg-void-950 border border-cinematic-border focus:border-ember focus:ring-1 focus:ring-ember px-4 py-2.5 font-mono text-xs text-cinematic-white placeholder-cinematic-darkMuted outline-none transition-colors"
+                      className="w-full bg-void-950 border border-cinematic-border focus:border-ember focus:ring-1 focus:ring-ember px-4 py-2.5 font-mono text-xs text-cinematic-white placeholder-cinematic-darkMuted outline-none transition-colors disabled:opacity-50"
                     />
                   </div>
 
@@ -215,20 +289,31 @@ const NextLevelContact = ({ onBackToTop }) => {
                     <textarea
                       rows={4}
                       required
+                      disabled={isSubmitting}
                       value={formData.message}
                       onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                       placeholder="Details on project inquiry, technical collaboration, or studio opportunity..."
-                      className="w-full bg-void-950 border border-cinematic-border focus:border-ember focus:ring-1 focus:ring-ember px-4 py-2.5 font-mono text-xs text-cinematic-white placeholder-cinematic-darkMuted outline-none transition-colors resize-none"
+                      className="w-full bg-void-950 border border-cinematic-border focus:border-ember focus:ring-1 focus:ring-ember px-4 py-2.5 font-mono text-xs text-cinematic-white placeholder-cinematic-darkMuted outline-none transition-colors resize-none disabled:opacity-50"
                     />
                   </div>
 
                   <button
                     type="submit"
+                    disabled={isSubmitting}
                     onMouseEnter={() => sfx.playHover()}
-                    className="btn-cinematic w-full mt-2"
+                    className="btn-cinematic w-full mt-2 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
                   >
-                    <Send size={15} />
-                    <span>DISPATCH TRANSMISSION</span>
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 size={15} className="animate-spin text-ember" />
+                        <span>TRANSMITTING SIGNAL...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Send size={15} />
+                        <span>DISPATCH TRANSMISSION</span>
+                      </>
+                    )}
                   </button>
                 </form>
               )}
