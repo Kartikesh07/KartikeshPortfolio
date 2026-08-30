@@ -11,7 +11,7 @@ const NextLevelContact = ({ onBackToTop }) => {
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
 
-  const emailAddress = 'kartikesh.belamkar@gmail.com';
+  const emailAddress = 'kartibelamkar@gmail.com';
 
   const handleCopyEmail = () => {
     sfx.playClick();
