@@ -53,13 +53,20 @@ const NextLevelContact = ({ onBackToTop }) => {
         setFormSubmitted(true);
         setFormData({ name: '', email: '', message: '' });
       } else {
-        throw new Error(data.message || 'Signal transmission failed.');
+        const msg = data.message || 'Signal transmission failed.';
+        throw new Error(msg);
       }
     } catch (err) {
       console.error('Form submission error:', err);
-      setErrorMessage(
-        'Automated dispatch encountered an issue. You can launch your email client directly with your message.'
-      );
+      if (err.message && err.message.toLowerCase().includes('activation')) {
+        setErrorMessage(
+          'First-time activation required: FormSubmit sent an activation email to kartibelamkar@gmail.com. Open your inbox and click "Activate Form" to finish setup!'
+        );
+      } else {
+        setErrorMessage(
+          'Automated dispatch encountered an issue. You can launch your email client directly with your message.'
+        );
+      }
     } finally {
       setIsSubmitting(false);
     }
