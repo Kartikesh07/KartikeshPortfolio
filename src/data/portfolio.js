@@ -92,7 +92,7 @@ export const experience = [
   {
     company: "GameWise",
     role: "Game Developer Intern",
-    period: "2024 — present",
+    period: "Aug 2026 — present",
     field: "Game development",
     description:
       "Building gameplay mechanics and real-time interaction systems, refining player movement, and working with asset integration and playtesting.",
@@ -100,7 +100,7 @@ export const experience = [
   {
     company: "Kravos Tech",
     role: "Full Stack AI Developer Intern",
-    period: "2024",
+    period: "May 2026 — Aug 2026",
     field: "Web & AI",
     description:
       "Worked on Python data pipelines, machine-learning API integration, and responsive React interfaces for analytics.",
@@ -108,7 +108,7 @@ export const experience = [
   {
     company: "Rural Games",
     role: "Development Lead Intern",
-    period: "2023 — 2024",
+    period: "Jun 2026 - Aug 2026",
     field: "Mobile games",
     description:
       "Worked on core gameplay architecture for a mobile title, developer collaboration, touch interactions, and mobile rendering performance.",
@@ -116,7 +116,7 @@ export const experience = [
   {
     company: "CodeNucleus Solutions",
     role: "Software Engineering Intern",
-    period: "2023",
+    period: "April 2025 — May 2025",
     field: "Software",
     description:
       "Built web features and reusable interface components, integrated APIs, and worked on application state and database queries.",
@@ -124,7 +124,7 @@ export const experience = [
   {
     company: "Solapur Municipal Corporation",
     role: "Technical Systems Intern",
-    period: "2022 — 2023",
+    period: "Jun 2025 - Jan 2026",
     field: "Civic technology",
     description:
       "Contributed to digital reporting and administrative interfaces, data migration, and verification workflows for municipal services.",
