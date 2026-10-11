@@ -121,26 +121,49 @@ function PaperKite() {
   );
 }
 
-function Console() {
-  const pixels = [
-    "00100100",
-    "01111110",
-    "11111111",
-    "01100110",
-    "01100110",
-    "11111111",
-    "01111110",
-    "00100100",
+function Console({ theme, screen, onPlay }) {
+  const patterns = [
+    [
+      "00100100",
+      "01111110",
+      "11111111",
+      "01100110",
+      "01100110",
+      "11111111",
+      "01111110",
+      "00100100",
+    ],
+    [
+      "00011000",
+      "00111100",
+      "01111110",
+      "11111111",
+      "01111110",
+      "00111100",
+      "00011000",
+      "00010000",
+    ],
+    [
+      "01100110",
+      "11111111",
+      "11111111",
+      "11111111",
+      "01111110",
+      "00111100",
+      "00011000",
+      "00000000",
+    ],
   ];
+  const pixels = patterns[screen];
   return (
     <group rotation={[-0.08, -0.29, -0.17]}>
       <Block
         size={[2.17, 3.1, 0.45]}
-        color={palette.darkPink}
+        color={theme.edge}
         radius={0.2}
         position={[0.015, 0, -0.1]}
       />
-      <Block size={[2.12, 3.04, 0.32]} color={palette.pink} radius={0.18} />
+      <Block size={[2.12, 3.04, 0.32]} color={theme.shell} radius={0.18} />
       <Block
         size={[1.78, 1.52, 0.075]}
         color={palette.green}
@@ -186,11 +209,25 @@ function Console() {
         radius={0.035}
         position={[-0.56, -0.64, 0.26]}
       />
-      <mesh position={[0.48, -0.75, 0.28]} rotation={[Math.PI / 2, 0, 0]}>
+      <mesh
+        position={[0.48, -0.75, 0.28]}
+        rotation={[Math.PI / 2, 0, 0]}
+        onClick={(event) => {
+          event.stopPropagation();
+          onPlay();
+        }}
+      >
         <cylinderGeometry args={[0.2, 0.21, 0.17, 28]} />
         <meshStandardMaterial color={palette.blue} roughness={0.3} />
       </mesh>
-      <mesh position={[0.82, -0.44, 0.28]} rotation={[Math.PI / 2, 0, 0]}>
+      <mesh
+        position={[0.82, -0.44, 0.28]}
+        rotation={[Math.PI / 2, 0, 0]}
+        onClick={(event) => {
+          event.stopPropagation();
+          onPlay();
+        }}
+      >
         <cylinderGeometry args={[0.2, 0.21, 0.17, 28]} />
         <meshStandardMaterial color={palette.yellow} roughness={0.3} />
       </mesh>
@@ -218,38 +255,61 @@ function Console() {
   );
 }
 
-function Composition({ running }) {
+function Composition({ running, theme, screen, spin, onPlay }) {
   const viewportWidth = useThree((state) => state.viewport.width);
   const group = useRef(null);
   const elapsed = useRef(0);
+  const spinAngle = useRef(0);
+  const lastSpin = useRef(spin);
+  const flower = useRef(null);
+  const ring = useRef(null);
+  useEffect(() => {
+    spinAngle.current += (spin - lastSpin.current) * Math.PI * 2;
+    lastSpin.current = spin;
+  }, [spin]);
+  useEffect(() => {
+    if (!running && group.current) {
+      // Keep the pixel display facing the visitor when motion is paused.
+      spinAngle.current = 0;
+      group.current.rotation.set(0, 0, 0);
+      group.current.position.y = 0;
+    }
+  }, [running]);
   useFrame((state, delta) => {
     if (!running) return;
     elapsed.current += Math.min(delta, 0.05);
     group.current.position.y = Math.sin(elapsed.current * 0.7) * 0.07;
     group.current.rotation.y = THREE.MathUtils.damp(
       group.current.rotation.y,
-      state.pointer.x * 0.12,
-      3,
+      spinAngle.current + state.pointer.x * 0.3,
+      4,
       delta,
     );
     group.current.rotation.x = THREE.MathUtils.damp(
       group.current.rotation.x,
-      -state.pointer.y * 0.07,
+      -state.pointer.y * 0.16,
       3,
       delta,
     );
+    flower.current.rotation.z = elapsed.current * 0.16;
+    ring.current.rotation.z = -0.4 + Math.sin(elapsed.current * 0.6) * 0.25;
   });
   return (
     <group ref={group} scale={Math.min(1, viewportWidth / 4.2)}>
-      <Console />
+      <Console theme={theme} screen={screen} onPlay={onPlay} />
       <PaperKite />
-      <FlowerSculpture
-        color={palette.yellow}
-        position={[-1.49, 1.28, 0.3]}
-        rotation={[0.2, -0.15, 0.1]}
-        scale={0.78}
-      />
-      <mesh position={[-1.27, -0.98, 0.2]} rotation={[0.65, 0.4, -0.4]}>
+      <group ref={flower} position={[-1.49, 1.28, 0.3]}>
+        <FlowerSculpture
+          color={palette.yellow}
+          rotation={[0.2, -0.15, 0.1]}
+          scale={0.78}
+        />
+      </group>
+      <mesh
+        ref={ring}
+        position={[-1.27, -0.98, 0.2]}
+        rotation={[0.65, 0.4, -0.4]}
+      >
         <torusGeometry args={[0.34, 0.095, 16, 40]} />
         <meshStandardMaterial color={palette.blue} roughness={0.26} />
       </mesh>
@@ -287,7 +347,15 @@ function ContextMonitor({ onFailure, onReady }) {
   return null;
 }
 
-export default function PlayScene({ running, onReady, onFailure }) {
+export default function PlayScene({
+  running,
+  onReady,
+  onFailure,
+  theme,
+  screen,
+  spin,
+  onPlay,
+}) {
   return (
     <Canvas
       className="play-canvas"
@@ -299,7 +367,13 @@ export default function PlayScene({ running, onReady, onFailure }) {
       <ambientLight intensity={1.4} />
       <directionalLight position={[-3, 6, 6]} intensity={3.2} />
       <directionalLight position={[3, -2, 2]} intensity={0.6} color="#e3d4ff" />
-      <Composition running={running} />
+      <Composition
+        running={running}
+        theme={theme}
+        screen={screen}
+        spin={spin}
+        onPlay={onPlay}
+      />
       <ContextMonitor onReady={onReady} onFailure={onFailure} />
     </Canvas>
   );

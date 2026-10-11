@@ -1,0 +1,118 @@
+.moru-companion {
+  position: fixed;
+  left: 0;
+  bottom: max(14px, env(safe-area-inset-bottom));
+  width: 106px;
+  height: 148px;
+  z-index: 30;
+  pointer-events: none;
+  isolation: isolate;
+}
+.moru-stage {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.moru-svg {
+  position: absolute;
+  width: 160px;
+  height: 174px;
+  max-width: none;
+  left: -28px;
+  bottom: 31px;
+  overflow: visible;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 0 #fffaf0b0);
+}
+.moru-trigger {
+  position: absolute;
+  left: 24px;
+  bottom: 41px;
+  width: 66px;
+  height: 92px;
+  border: 0;
+  border-radius: 45% 45% 38% 38%;
+  background: transparent;
+  pointer-events: auto;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.moru-trigger:hover,
+.moru-trigger:focus-visible {
+  background: #ffc8430a;
+}
+.moru-trigger:focus-visible {
+  outline: 2px dashed var(--green);
+  outline-offset: 3px;
+}
+.moru-toggle,
+.moru-show {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  border: 1px solid #193e3233;
+  border-radius: 30px;
+  color: var(--green);
+  background: var(--paper);
+  box-shadow: 0 2px 8px #193e320c;
+  font-size: 11px;
+  font-weight: 600;
+  pointer-events: auto;
+  touch-action: manipulation;
+}
+.moru-toggle {
+  position: absolute;
+  bottom: 0;
+  left: 11px;
+  width: 84px;
+}
+.moru-show {
+  position: fixed;
+  left: 0;
+  bottom: max(14px, env(safe-area-inset-bottom));
+  padding: 0 13px;
+  z-index: 30;
+}
+.moru-toggle:hover,
+.moru-show:hover {
+  background: #f7e8c7;
+}
+.moru-companion[data-occluded="true"] .moru-stage {
+  opacity: 0.65;
+}
+.moru-trigger:disabled {
+  pointer-events: none;
+  opacity: 1;
+  cursor: default;
+}
+.moru-companion[data-suppressed="true"] {
+  visibility: hidden;
+}
+.moru-companion[data-moving="true"] .moru-trigger,
+.moru-companion[data-moving="true"] .moru-toggle {
+  pointer-events: none;
+}
+@media (max-width: 600px) {
+  .moru-companion {
+    width: 96px;
+    height: 131px;
+  }
+  .moru-svg {
+    width: 140px;
+    height: 152px;
+    left: -22px;
+    bottom: 31px;
+  }
+  .moru-trigger {
+    left: 23px;
+    width: 60px;
+    height: 80px;
+  }
+  .moru-toggle {
+    left: 7px;
+    width: 82px;
+    font-size: 10px;
+  }
+}

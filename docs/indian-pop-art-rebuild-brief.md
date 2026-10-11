@@ -1,6 +1,6 @@
 # Indian pop art portfolio rebuild brief
 
-Recorded: 11 October 2026. Status: research and preparation; implementation has not begun.
+Recorded: 11 October 2026. Status: research brief retained for reference. The rebuild and subsequent motion/interactivity pass are implemented; see `design-system.md`.
 
 ## Confirmed user intent
 
