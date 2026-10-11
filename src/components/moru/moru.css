@@ -1,10 +1,13 @@
-.moru-companion {
+.moru-companion,
+.moru-show {
   position: fixed;
-  left: 0;
+  right: max(18px, env(safe-area-inset-right));
   bottom: max(14px, env(safe-area-inset-bottom));
-  width: 106px;
-  height: 148px;
   z-index: 30;
+}
+.moru-companion {
+  width: 96px;
+  height: 142px;
   pointer-events: none;
   isolation: isolate;
 }
@@ -15,31 +18,27 @@
 }
 .moru-svg {
   position: absolute;
-  width: 160px;
-  height: 174px;
+  width: 96px;
+  height: 104px;
   max-width: none;
-  left: -28px;
-  bottom: 31px;
+  right: 10px;
+  bottom: 42px;
   overflow: visible;
   pointer-events: none;
   filter: drop-shadow(0 2px 0 #fffaf0b0);
 }
 .moru-trigger {
   position: absolute;
-  left: 24px;
-  bottom: 41px;
-  width: 66px;
-  height: 92px;
+  right: 20px;
+  bottom: 44px;
+  width: 44px;
+  height: 68px;
   border: 0;
-  border-radius: 45% 45% 38% 38%;
+  border-radius: 45%;
   background: transparent;
   pointer-events: auto;
   cursor: pointer;
   touch-action: manipulation;
-}
-.moru-trigger:hover,
-.moru-trigger:focus-visible {
-  background: #ffc8430a;
 }
 .moru-trigger:focus-visible {
   outline: 2px dashed var(--green);
@@ -65,54 +64,102 @@
 .moru-toggle {
   position: absolute;
   bottom: 0;
-  left: 11px;
-  width: 84px;
+  right: 0;
+  width: 82px;
 }
 .moru-show {
-  position: fixed;
-  left: 0;
-  bottom: max(14px, env(safe-area-inset-bottom));
-  padding: 0 13px;
-  z-index: 30;
+  width: 44px;
+  padding: 0;
+}
+.moru-show .moru-show-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+.moru-compact-icon {
+  display: none;
 }
 .moru-toggle:hover,
 .moru-show:hover {
   background: #f7e8c7;
 }
-.moru-companion[data-occluded="true"] .moru-stage {
-  opacity: 0.65;
+.moru-dialogue {
+  position: absolute;
+  bottom: 128px;
+  right: 64px;
+  width: max-content;
+  max-width: min(220px, calc(100vw - 110px));
+  padding: 12px 15px;
+  border: 1px solid #dca33c66;
+  border-radius: 18px 18px 4px 18px;
+  color: var(--green);
+  background: #fffaf0f5;
+  box-shadow: 0 5px 18px #193e3212;
+  font-size: 12px;
+  line-height: 1.5;
+  font-weight: 500;
+  pointer-events: none;
+}
+.moru-dialogue[hidden] {
+  display: none;
+}
+.moru-companion[data-collapsed="true"] .moru-stage {
+  visibility: hidden;
+}
+.moru-companion[data-collapsed="true"] .moru-dialogue {
+  bottom: 56px;
+  right: 44px;
+}
+.moru-companion[data-collapsed="true"] .moru-toggle {
+  width: 44px;
+  gap: 2px;
+}
+.moru-companion[data-collapsed="true"] .moru-toggle span {
+  display: none;
+}
+.moru-companion[data-collapsed="true"] .moru-compact-icon {
+  display: block;
+}
+.moru-companion[data-blocked="true"] .moru-toggle,
+.moru-show[data-blocked="true"] {
+  opacity: 0.15;
+  pointer-events: none;
 }
 .moru-trigger:disabled {
   pointer-events: none;
-  opacity: 1;
-  cursor: default;
 }
 .moru-companion[data-suppressed="true"] {
   visibility: hidden;
 }
-.moru-companion[data-moving="true"] .moru-trigger,
-.moru-companion[data-moving="true"] .moru-toggle {
-  pointer-events: none;
-}
 @media (max-width: 600px) {
+  .moru-companion,
+  .moru-show {
+    right: max(12px, env(safe-area-inset-right));
+    bottom: max(10px, env(safe-area-inset-bottom));
+  }
   .moru-companion {
-    width: 96px;
-    height: 131px;
+    width: 84px;
+    height: 127px;
   }
   .moru-svg {
-    width: 140px;
-    height: 152px;
-    left: -22px;
-    bottom: 31px;
+    width: 82px;
+    height: 89px;
+    right: 10px;
+    bottom: 40px;
   }
   .moru-trigger {
-    left: 23px;
-    width: 60px;
-    height: 80px;
+    right: 15px;
+    height: 57px;
   }
   .moru-toggle {
-    left: 7px;
-    width: 82px;
+    width: 76px;
     font-size: 10px;
+  }
+  .moru-dialogue {
+    bottom: 115px;
+    right: 53px;
+    font-size: 11px;
   }
 }

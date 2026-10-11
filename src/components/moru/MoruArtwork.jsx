@@ -157,14 +157,16 @@ export default function MoruArtwork() {
                   strokeWidth="3"
                 />
               </g>
-              <path
-                d="M158 101L179 106L159 111Z"
-                fill="#ffc843"
-                stroke="#bc672c"
-                strokeWidth="1.6"
-                strokeLinejoin="round"
-              />
-              <path d="M160 106L175 107L160 112Z" fill="#ec8438" />
+              <g className="moru-beak" data-part="beak">
+                <path
+                  d="M158 101L179 106L159 111Z"
+                  fill="#ffc843"
+                  stroke="#bc672c"
+                  strokeWidth="1.6"
+                  strokeLinejoin="round"
+                />
+                <path d="M160 106L175 107L160 112Z" fill="#ec8438" />
+              </g>
               <path
                 d="M128 105C127 92 135 85 146 87C158 88 165 97 160 110C157 120 143 126 134 118C130 115 128 111 128 105Z"
                 fill="#2a62bb"

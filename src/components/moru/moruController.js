@@ -1,50 +1,64 @@
 import { gsap } from "gsap";
 import { initialMoruState, transitionMoru } from "./moruMachine";
 
-const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
 const intersects = (a, b) =>
-  a.left < b.right + 6 &&
-  a.right > b.left - 6 &&
-  a.top < b.bottom + 6 &&
-  a.bottom > b.top - 6;
+  a.left < b.right + 4 &&
+  a.right > b.left - 4 &&
+  a.top < b.bottom + 4 &&
+  a.bottom > b.top - 4;
+const suppressed = () =>
+  document.hidden ||
+  document.activeElement?.matches(
+    "input, textarea, select, [contenteditable='true']",
+  );
 
-// Compact hide/show controls use the same placement safety as the companion.
+// Collision checks change presentation and hit-testing, never dock position.
+function inspectDock(root, full = true) {
+  const box = root.getBoundingClientRect();
+  const obstacles = [
+    ...document.querySelectorAll(
+      "a, button, input, textarea, select, summary, [role='button']",
+    ),
+  ]
+    .filter((node) => !root.contains(node))
+    .map((node) => ({ node, rect: node.getBoundingClientRect() }))
+    .filter(
+      ({ node, rect }) =>
+        rect.width &&
+        rect.height &&
+        rect.bottom > 0 &&
+        rect.top < innerHeight &&
+        getComputedStyle(node).visibility !== "hidden",
+    );
+  const badge = full ? root.querySelector(".moru-toggle") : root;
+  const compact = {
+    left: box.right - 44,
+    right: box.right,
+    top: box.bottom - 44,
+    bottom: box.bottom,
+  };
+  const footprint = { ...compact, left: box.left - 35, top: box.top };
+  const collapsed =
+    full && obstacles.some(({ rect }) => intersects(footprint, rect));
+  root.dataset.collapsed = String(collapsed);
+  const badgeBox = collapsed || !full ? compact : badge.getBoundingClientRect();
+  const blocked = obstacles.some(({ rect }) => intersects(badgeBox, rect));
+  root.dataset.blocked = String(blocked);
+  badge.disabled = blocked;
+  if (full) {
+    const trigger = root.querySelector(".moru-trigger");
+    trigger.disabled = collapsed;
+    trigger.tabIndex = collapsed ? -1 : 0;
+  }
+  return collapsed || blocked;
+}
+
 export function createMoruDock(node) {
   let frame;
   const place = () => {
     frame = undefined;
-    const width = node.offsetWidth;
-    const height = window.visualViewport?.height || window.innerHeight;
-    const bottom = parseFloat(getComputedStyle(node).bottom) || 14;
-    const obstacles = [
-      ...document.querySelectorAll(
-        "a, button, input, textarea, select, summary",
-      ),
-    ]
-      .filter((item) => item !== node)
-      .map((item) => item.getBoundingClientRect())
-      .filter(
-        (rect) =>
-          rect.width && rect.height && rect.bottom > 0 && rect.top < height,
-      );
-    const xs = [
-      18,
-      Math.max(18, document.documentElement.clientWidth - width - 18),
-    ];
-    for (let offset = 0; offset < height - 60; offset += 52)
-      for (const x of xs) {
-        const box = {
-          left: x,
-          right: x + width,
-          bottom: height - bottom - offset,
-          top: height - bottom - offset - 44,
-        };
-        if (!obstacles.some((rect) => intersects(box, rect))) {
-          gsap.set(node, { x, y: -offset });
-          return;
-        }
-      }
-    gsap.set(node, { x: 18, y: 0 });
+    inspectDock(node, false);
   };
   const request = () => {
     if (!frame) frame = requestAnimationFrame(place);
@@ -59,15 +73,15 @@ export function createMoruDock(node) {
       window.removeEventListener("scroll", request);
       window.removeEventListener("resize", request);
       window.visualViewport?.removeEventListener("resize", request);
-      gsap.killTweensOf(node);
     },
   };
 }
 
-export function createMoruController(root, { paused }) {
+export function createMoruController(root, { paused, memory, announce }) {
   const get = (selector) => root.querySelector(selector);
   const feathers = [...root.querySelectorAll(".moru-feather")];
   const particles = [...root.querySelectorAll(".moru-particle")];
+  const bubble = get(".moru-dialogue");
   const parts = {
     gait: get(".moru-gait"),
     body: get(".moru-body-motion"),
@@ -77,6 +91,8 @@ export function createMoruController(root, { paused }) {
     gaze: get(".moru-gaze"),
     wing: get(".moru-wing"),
     crest: get(".moru-crest"),
+    tail: get(".moru-tail"),
+    beak: get(".moru-beak"),
     frontLeg: get(".moru-leg-front"),
     backLeg: get(".moru-leg-back"),
   };
@@ -88,18 +104,16 @@ export function createMoruController(root, { paused }) {
       x: 0,
       y: 0,
     });
-    gsap.set(parts.gait, { svgOrigin: "120 220" });
-    gsap.set(parts.body, { svgOrigin: "120 220" });
+    gsap.set([parts.gait, parts.body], { svgOrigin: "120 220" });
+    gsap.set(parts.tail, { svgOrigin: "120 208" });
     gsap.set([parts.head, parts.aim], { svgOrigin: "141 111" });
     gsap.set(parts.eyes, { svgOrigin: "147 102" });
+    gsap.set(parts.beak, { svgOrigin: "160 106" });
     gsap.set(parts.wing, { svgOrigin: "111 179" });
     gsap.set(parts.crest, { svgOrigin: "141 89" });
     gsap.set(parts.frontLeg, { svgOrigin: "109 219" });
     gsap.set(parts.backLeg, { svgOrigin: "132 219" });
   }, root);
-  const position = { x: 32, y: 0 };
-  const setX = gsap.quickSetter(root, "x", "px");
-  const setY = gsap.quickSetter(root, "y", "px");
   const aim = gsap.quickTo(parts.aim, "rotation", {
     duration: 0.4,
     ease: "power2.out",
@@ -112,27 +126,60 @@ export function createMoruController(root, { paused }) {
     duration: 0.3,
     ease: "power2.out",
   });
-  let state = initialMoruState;
-  let timeline, movement, idleTimer, settleTimer, frame;
+  let state = initialMoruState,
+    timeline,
+    bubbleTween,
+    idleTimer,
+    dialogueTimer,
+    settleTimer,
+    frame;
   let destroyed = false,
-    placementDirty = true,
-    scrollDirty = false,
-    cursorDirty = false;
-  let lastScroll = window.scrollY,
-    lastCard = null,
-    idleCount = 0,
-    staticFan = false;
-  let cursor = null;
-  let viewport = {
-    width: document.documentElement.clientWidth,
-    height: window.innerHeight,
-  };
-  let baseBottom = 16;
+    staticFan = false,
+    collapsed = false,
+    lastScroll = window.scrollY,
+    scrollDirection = 1,
+    lastScrollGesture = -Infinity,
+    lastCard = null;
+  let cursor = null,
+    dockDirty = true;
 
+  function hideDialogue() {
+    clearTimeout(dialogueTimer);
+    bubbleTween?.kill();
+    bubble.hidden = true;
+    bubble.style.opacity = "0";
+  }
+  function say(text, immediate = false) {
+    if (destroyed || suppressed() || root.dataset.blocked === "true")
+      return false;
+    const now = performance.now();
+    if (!immediate && now - memory.lastDialogue < 30000) return false;
+    memory.lastDialogue = now;
+    hideDialogue();
+    bubble.textContent = text;
+    bubble.hidden = false;
+    if (immediate) announce(text);
+    if (paused) bubble.style.opacity = "1";
+    else
+      bubbleTween = gsap.fromTo(
+        bubble,
+        { opacity: 0, y: 4 },
+        { opacity: 1, y: 0, duration: 0.25 },
+      );
+    dialogueTimer = setTimeout(() => {
+      if (paused) hideDialogue();
+      else
+        bubbleTween = gsap.to(bubble, {
+          opacity: 0,
+          y: -3,
+          duration: 0.25,
+          onComplete: hideDialogue,
+        });
+    }, 3300);
+    return true;
+  }
   function resetGesture() {
     timeline?.kill();
-    staticFan = false;
-    root.dataset.fanOpen = "false";
     gsap.set(
       [
         parts.gait,
@@ -140,10 +187,12 @@ export function createMoruController(root, { paused }) {
         parts.head,
         parts.wing,
         parts.crest,
+        parts.tail,
+        parts.beak,
         parts.frontLeg,
         parts.backLeg,
       ],
-      { rotation: 0, y: 0, scale: 1 },
+      { rotation: 0, y: 0, scaleX: 1, scaleY: 1 },
     );
     gsap.set(parts.eyes, { scaleY: 1 });
     gsap.set(feathers, {
@@ -151,16 +200,34 @@ export function createMoruController(root, { paused }) {
       scaleY: 0.62,
     });
     gsap.set(particles, { opacity: 0, x: 0, y: 0, scale: 1 });
+    staticFan = false;
+    root.dataset.fanOpen = "false";
+    if (paused) get(".moru-trigger").setAttribute("aria-pressed", "false");
   }
   function scheduleIdle() {
     clearTimeout(idleTimer);
-    if (paused || state.value !== "idle" || destroyed) return;
+    if (paused || collapsed || state.value !== "idle" || destroyed) return;
     idleTimer = setTimeout(
       () => {
-        idleCount += 1;
-        send({ type: idleCount % 3 === 0 ? "LOOK" : "BLINK" });
+        if (performance.now() - memory.lastActivity > 75000)
+          send({ type: "SLEEP" });
+        else {
+          const r = Math.random();
+          send({
+            type:
+              r < 0.48
+                ? "BLINK"
+                : r < 0.7
+                  ? "BREATHE"
+                  : r < 0.85
+                    ? "PREEN"
+                    : r < 0.95
+                      ? "STRETCH"
+                      : "LOOK",
+          });
+        }
       },
-      4200 + Math.random() * 2800,
+      9000 + Math.random() * 7000,
     );
   }
   function animateState() {
@@ -169,13 +236,12 @@ export function createMoruController(root, { paused }) {
     root.dataset.moruState = state.value;
     root.dataset.moruPhase =
       state.value === "fanning" ? "anticipation" : "rest";
+    aim.tween.pause();
+    gazeX.tween.pause();
+    gazeY.tween.pause();
+    gsap.set([parts.aim, parts.gaze], { rotation: 0, x: 0, y: 0 });
     if (["paused", "suspended", "hidden"].includes(state.value)) {
-      movement?.kill();
-      root.dataset.moving = "false";
-      aim.tween.pause();
-      gazeX.tween.pause();
-      gazeY.tween.pause();
-      gsap.set([parts.aim, parts.gaze], { rotation: 0, x: 0, y: 0 });
+      hideDialogue();
       return;
     }
     if (state.value === "idle") {
@@ -186,42 +252,175 @@ export function createMoruController(root, { paused }) {
     timeline = gsap.timeline({
       onComplete: () => send({ type: "COMPLETE", epoch }),
     });
-    if (state.value === "walking") {
+    const blink = (at) =>
       timeline
-        .repeat(-1)
-        .to(
+        .to(parts.eyes, { scaleY: 0.08, duration: 0.085 }, at)
+        .to(parts.eyes, { scaleY: 1, duration: 0.13 }, at + 0.085);
+    if (state.value === "entering") {
+      // Only the SVG rig peeks/hops. The fixed dock never receives transforms.
+      timeline
+        .fromTo(
           parts.gait,
-          { y: -3, rotation: -1, duration: 0.2, ease: "sine.inOut" },
+          { y: 235, scaleX: 0.92, scaleY: 1.05 },
+          { y: 80, scaleX: 1, scaleY: 1, duration: 0.4, ease: "power2.out" },
           0,
         )
-        .to(parts.frontLeg, { rotation: 17, duration: 0.2 }, 0)
-        .to(parts.backLeg, { rotation: -14, duration: 0.2 }, 0)
+        .to(parts.head, { rotation: -12, duration: 0.25 }, 0.3)
         .to(
           parts.gait,
-          { y: 0, rotation: 1, duration: 0.2, ease: "sine.inOut" },
-          0.2,
+          { y: 96, scaleX: 1.12, scaleY: 0.88, duration: 0.18 },
+          0.56,
         )
-        .to(parts.frontLeg, { rotation: -14, duration: 0.2 }, 0.2)
-        .to(parts.backLeg, { rotation: 17, duration: 0.2 }, 0.2);
-    } else if (state.value === "blinking") {
-      timeline
-        .to(parts.eyes, { scaleY: 0.08, duration: 0.085 })
-        .to(parts.eyes, { scaleY: 1, duration: 0.13 });
-    } else if (state.value === "curious") {
-      timeline
-        .to(parts.head, { rotation: -8, duration: 0.3, ease: "sine.inOut" }, 0)
-        .to(parts.crest, { rotation: 8, duration: 0.3 }, 0)
-        .to(parts.wing, { rotation: -5, duration: 0.3 }, 0)
-        .to(parts.head, { rotation: 3, duration: 0.35 }, 0.65)
         .to(
-          [parts.head, parts.crest, parts.wing],
-          { rotation: 0, duration: 0.35 },
+          parts.gait,
+          {
+            y: -17,
+            scaleX: 0.92,
+            scaleY: 1.08,
+            duration: 0.35,
+            ease: "power2.out",
+          },
+          0.74,
+        )
+        .to(
+          parts.gait,
+          {
+            y: 0,
+            scaleX: 1.06,
+            scaleY: 0.94,
+            duration: 0.22,
+            ease: "power2.in",
+          },
+          1.09,
+        )
+        .to(
+          parts.gait,
+          { scaleX: 1, scaleY: 1, duration: 0.3, ease: "back.out(2)" },
+          1.31,
+        )
+        .to(
+          parts.wing,
+          { rotation: -22, duration: 0.13, repeat: 3, yoyo: true },
+          0.8,
+        )
+        .to(
+          parts.crest,
+          { rotation: 14, duration: 0.14, repeat: 3, yoyo: true },
+          1.05,
+        )
+        .to(parts.head, { rotation: 5, duration: 0.3 }, 1.2)
+        .to(parts.head, { rotation: 0, duration: 0.25 }, 1.55)
+        .call(() => say("Namaste! I'm Moru 🦚", true), [], 1.65);
+      blink(1.35);
+    } else if (state.value === "blinking") {
+      blink(0);
+    } else if (["curious", "hovering"].includes(state.value)) {
+      timeline
+        .to(parts.head, { rotation: -9, duration: 0.3 }, 0)
+        .to(parts.crest, { rotation: 7, duration: 0.3 }, 0)
+        .to([parts.head, parts.crest], { rotation: 0, duration: 0.4 }, 0.85);
+      if (state.value === "hovering") blink(0.4);
+    } else if (state.value === "breathing") {
+      timeline
+        .to(
+          parts.body,
+          {
+            scaleX: 1.02,
+            scaleY: 1.025,
+            y: -1,
+            duration: 1,
+            ease: "sine.inOut",
+          },
+          0,
+        )
+        .to(parts.crest, { rotation: 3, duration: 1 }, 0)
+        .to(
+          [parts.body, parts.crest],
+          {
+            scaleX: 1,
+            scaleY: 1,
+            y: 0,
+            rotation: 0,
+            duration: 1,
+            ease: "sine.inOut",
+          },
           1,
         );
+    } else if (state.value === "preening") {
+      timeline
+        .to(
+          parts.head,
+          { rotation: 36, y: 32, duration: 0.45, ease: "sine.inOut" },
+          0,
+        )
+        .to(parts.wing, { rotation: -13, duration: 0.4 }, 0)
+        .to(
+          parts.head,
+          { rotation: 43, y: 36, duration: 0.2, repeat: 3, yoyo: true },
+          0.55,
+        )
+        .to(
+          [parts.head, parts.wing],
+          { rotation: 0, y: 0, duration: 0.5 },
+          1.45,
+        );
+      blink(0.45);
+    } else if (state.value === "stretching") {
+      timeline
+        .to(
+          parts.wing,
+          { rotation: -38, scaleX: 1.17, duration: 0.5, ease: "back.out(1.4)" },
+          0,
+        )
+        .to(parts.body, { rotation: -4, scaleY: 1.04, duration: 0.5 }, 0)
+        .to(parts.head, { rotation: -12, duration: 0.5 }, 0)
+        .to(parts.crest, { rotation: 10, duration: 0.4 }, 0.3)
+        .to(
+          [parts.wing, parts.body, parts.head, parts.crest],
+          {
+            rotation: 0,
+            scaleX: 1,
+            scaleY: 1,
+            duration: 0.6,
+            ease: "sine.inOut",
+          },
+          1.15,
+        );
+    } else if (state.value === "sleepy") {
+      timeline
+        .to(parts.beak, { scaleY: 1.65, duration: 0.45 }, 0)
+        .to(parts.head, { rotation: -10, y: -3, duration: 0.45 }, 0)
+        .to(parts.beak, { scaleY: 1, duration: 0.4 }, 0.65)
+        .to(parts.head, { rotation: 24, y: 9, duration: 0.7 }, 0.8)
+        .to(parts.eyes, { scaleY: 0.06, duration: 0.5 }, 0.9)
+        .to(parts.crest, { rotation: 12, duration: 0.5 }, 1);
+    } else if (state.value === "waking") {
+      timeline
+        .fromTo(parts.eyes, { scaleY: 0.06 }, { scaleY: 1, duration: 0.25 }, 0)
+        .fromTo(
+          parts.head,
+          { rotation: 24, y: 9 },
+          { rotation: -7, y: -3, duration: 0.4 },
+          0,
+        )
+        .to(
+          parts.crest,
+          { rotation: -10, duration: 0.2, repeat: 1, yoyo: true },
+          0.15,
+        )
+        .to(parts.head, { rotation: 0, y: 0, duration: 0.4 }, 0.5);
+      say("Oh! You're still here!");
+    } else if (state.value === "scrolling") {
+      timeline
+        .to(parts.body, { rotation: scrollDirection * 3, duration: 0.2 }, 0)
+        .to(parts.head, { rotation: scrollDirection * -5, duration: 0.2 }, 0)
+        .to(parts.tail, { rotation: scrollDirection * 3, duration: 0.25 }, 0)
+        .to(
+          [parts.body, parts.head, parts.tail],
+          { rotation: 0, duration: 0.4, ease: "sine.inOut" },
+          0.25,
+        );
     } else if (state.value === "fanning") {
-      aim(0);
-      gazeX(0);
-      gazeY(0);
       timeline
         .to(
           parts.body,
@@ -300,166 +499,115 @@ export function createMoruController(root, { paused }) {
     }
   }
   function send(event) {
-    if (destroyed) return;
+    if (destroyed) return false;
     const next = transitionMoru(state, event);
-    if (next === state) return;
+    if (next === state) return false;
     state = next;
     animateState();
-    if (state.value === "idle" && movement?.isActive())
-      send({ type: "SCROLL" });
+    return true;
   }
-
-  function safePosition() {
-    viewport = {
-      width: document.documentElement.clientWidth,
-      height: window.visualViewport?.height || window.innerHeight,
-    };
-    baseBottom = parseFloat(getComputedStyle(root).bottom) || 16;
-    const width = root.offsetWidth;
-    const height = root.offsetHeight;
-    const margin = viewport.width <= 600 ? 66 : 74;
-    const maxX = Math.max(margin, viewport.width - width - margin);
-    const range = Math.max(0, Math.min(520, maxX - margin));
-    const progress = clamp(
-      window.scrollY /
-        Math.max(1, document.documentElement.scrollHeight - window.innerHeight),
-      0,
-      1,
-    );
-    const preferred = clamp(
-      paused ? position.x : margin + progress * range,
-      margin,
-      maxX,
-    );
-    const xs = [preferred, margin, maxX];
-    for (let x = margin; x < maxX; x += 80) xs.push(x);
-    xs.sort((a, b) => Math.abs(a - preferred) - Math.abs(b - preferred));
-    // Only Moru's body button and badge receive input. The spreading tail and
-    // particles never do. Yield occupied space rather than stealing page clicks.
-    const obstacles = [
-      ...document.querySelectorAll(
-        "a, button, input, textarea, select, summary",
-      ),
-    ]
-      .filter((node) => !root.contains(node))
-      .map((node) => node.getBoundingClientRect())
-      .filter(
-        (rect) =>
-          rect.width &&
-          rect.height &&
-          rect.bottom > 0 &&
-          rect.top < viewport.height,
-      );
-    const find = (footprint, offsets) => {
-      for (const offset of offsets)
-        for (const x of xs) {
-          const box = {
-            left: x,
-            right: x + width,
-            bottom: viewport.height - baseBottom - offset,
-            top: viewport.height - baseBottom - offset - footprint,
-          };
-          if (box.top >= 8 && !obstacles.some((rect) => intersects(box, rect)))
-            return { x, y: -offset };
-        }
-    };
-    const actor = find(height, [0, 56, 112]);
-    root.dataset.occluded = actor ? "false" : "true";
-    get(".moru-trigger").disabled = !actor;
-    const offsets = [];
-    for (let y = 0; y < viewport.height - 60; y += 56) offsets.push(y);
-    return actor || find(44, offsets) || { x: 20, y: 0 };
-  }
-  function writePosition() {
-    setX(position.x);
-    setY(position.y);
+  function activity() {
+    memory.lastActivity = performance.now();
+    if (state.value === "sleepy") send({ type: "WAKE" });
   }
   function updateGaze() {
-    if (paused || ["fanning", "suspended", "hidden"].includes(state.value))
+    if (
+      paused ||
+      collapsed ||
+      !["idle", "curious", "hovering"].includes(state.value)
+    )
       return;
-    const dx = cursor ? cursor.x - (position.x + root.offsetWidth * 0.61) : 0;
-    const dy = cursor
-      ? cursor.y -
-        (viewport.height - baseBottom + position.y - root.offsetHeight * 0.66)
-      : 0;
-    const nearby = cursor && Math.hypot(dx, dy) < 280;
-    aim(nearby ? clamp(dx / 30, -7, 7) : 0);
+    const rect = get(".moru-trigger").getBoundingClientRect();
+    const dx = cursor ? cursor.x - (rect.left + rect.width / 2) : 0;
+    const dy = cursor ? cursor.y - (rect.top + rect.height * 0.25) : 0;
+    const nearby = cursor && Math.hypot(dx, dy) < 220;
+    aim(nearby ? clamp(dx / 35, -6, 6) : 0);
     gazeX(nearby ? clamp(dx / 75, -2.1, 2.1) : 0);
     gazeY(nearby ? clamp(dy / 85, -1.7, 1.7) : 0);
   }
-  function isSuppressed() {
-    return (
-      document.hidden ||
-      document.activeElement?.matches(
-        "input, textarea, select, [contenteditable='true']",
-      )
-    );
+  function contextual() {
+    if (suppressed() || root.dataset.blocked === "true") return;
+    const sections = [
+      document.getElementById("home"),
+      document.getElementById("work"),
+      document.getElementById("skills-heading")?.closest("section"),
+      document.getElementById("contact"),
+    ].filter(Boolean);
+    const section = sections.find((node) => {
+      const r = node.getBoundingClientRect();
+      return r.top < innerHeight * 0.55 && r.bottom > innerHeight * 0.55;
+    });
+    if (!section) return;
+    const key = section.id || "skills";
+    if (memory.lastContext === key) return;
+    const texts = {
+      home: "Another tour? I'm ready!",
+      work: "These creations are worth a peek!",
+      skills: "Brains, code, and a little magic!",
+      contact: "Got an idea? Say hello!",
+    };
+    if (say(texts[key] || texts.skills)) memory.lastContext = key;
   }
   function flush() {
     frame = undefined;
     if (destroyed) return;
-    const suppressed = isSuppressed();
-    root.dataset.suppressed = suppressed ? "true" : "false";
-    if (suppressed) {
+    root.dataset.suppressed = String(Boolean(suppressed()));
+    if (suppressed()) {
       send({ type: "SUSPEND" });
+      hideDialogue();
       return;
     }
-    if (state.value === "suspended")
-      send({ type: paused ? "PAUSE" : "RESUME" });
-    if (placementDirty) {
-      placementDirty = false;
-      const target = safePosition();
-      movement?.kill();
-      root.dataset.moving = "false";
-      const changed =
-        Math.abs(position.x - target.x) + Math.abs(position.y - target.y) > 1;
-      if (!paused && changed) {
-        if (scrollDirty) send({ type: "SCROLL" });
-        root.dataset.moving = "true";
-        movement = gsap.to(position, {
-          ...target,
-          duration: 0.72,
-          delay: 0.055,
-          ease: "power2.out",
-          onUpdate: writePosition,
-          onComplete: () => {
-            root.dataset.moving = "false";
-            send({ type: "SETTLED" });
-          },
-        });
-      } else {
-        Object.assign(position, target);
-        writePosition();
-        if (state.value === "walking") send({ type: "SETTLED" });
-      }
+    const wasCollapsed = collapsed;
+    if (dockDirty) {
+      collapsed = inspectDock(root);
+      dockDirty = false;
     }
-    if (cursorDirty || scrollDirty) updateGaze();
-    cursorDirty = false;
-    scrollDirty = false;
+    if (collapsed) {
+      send({ type: "SUSPEND" });
+      if (root.dataset.blocked === "true") hideDialogue();
+      memory.entered = true;
+      return;
+    }
+    if (!memory.entered) {
+      memory.entered = true;
+      if (paused) send({ type: "PAUSE" });
+      else {
+        if (state.value === "suspended") send({ type: "RESUME" });
+        send({ type: "ENTER" });
+      }
+    } else if (state.value === "suspended" || wasCollapsed)
+      send({ type: paused ? "PAUSE" : "RESUME" });
+    updateGaze();
   }
   function request() {
     if (!frame && !destroyed) frame = requestAnimationFrame(flush);
   }
-  function scroll() {
-    const delta = window.scrollY - lastScroll;
-    lastScroll = window.scrollY;
-    if (Math.abs(delta) < 0.5) return;
-    placementDirty = true;
-    scrollDirty = true;
-    clearTimeout(settleTimer);
-    settleTimer = setTimeout(() => {
-      if (!movement?.isActive()) send({ type: "SETTLED" });
-    }, 240);
+  function resize() {
+    dockDirty = true;
     request();
   }
-  function resize() {
-    placementDirty = true;
+  function scroll() {
+    activity();
+    dockDirty = true;
+    scrollDirection = window.scrollY >= lastScroll ? 1 : -1;
+    const now = performance.now();
+    if (
+      memory.entered &&
+      !paused &&
+      !collapsed &&
+      now - lastScrollGesture > 1000
+    ) {
+      if (send({ type: "SCROLL" })) lastScrollGesture = now;
+    }
+    lastScroll = window.scrollY;
+    clearTimeout(settleTimer);
+    settleTimer = setTimeout(contextual, 1200);
     request();
   }
   function pointer(event) {
+    activity();
     if (event.pointerType !== "mouse" || paused) return;
     cursor = { x: event.clientX, y: event.clientY };
-    cursorDirty = true;
     request();
   }
   function project(event) {
@@ -467,57 +615,90 @@ export function createMoruController(root, { paused }) {
       event.target instanceof Element
         ? event.target.closest(".project-card")
         : null;
-    if (card && card !== lastCard) send({ type: "PROJECT" });
+    if (memory.entered && card && card !== lastCard) {
+      send({ type: "PROJECT" });
+      if (event.type === "focusin")
+        say(
+          card.textContent.includes("Games")
+            ? "Games are my favorite too!"
+            : "These creations are worth a peek!",
+        );
+      else {
+        clearTimeout(settleTimer);
+        settleTimer = setTimeout(() => {
+          if (lastCard === card)
+            say(
+              card.textContent.includes("Games")
+                ? "Games are my favorite too!"
+                : "These creations are worth a peek!",
+            );
+        }, 1400);
+      }
+    }
     lastCard = card;
   }
   function focus(event) {
+    activity();
     project(event);
-    placementDirty = true;
-    request();
+    dockDirty = true;
+    visibility();
   }
   function leave(event) {
     if (!event.relatedTarget) {
       cursor = null;
-      cursorDirty = true;
       request();
     }
   }
   function visibility() {
-    placementDirty = true;
-    if (isSuppressed()) {
+    dockDirty = true;
+    if (suppressed()) {
       root.dataset.suppressed = "true";
       send({ type: "SUSPEND" });
+      hideDialogue();
     } else request();
   }
-
-  // Position once without an entrance flight; no permanent requestAnimationFrame
-  // loop is installed. The only repeated timeline is gait while actually moving.
-  Object.assign(position, safePosition());
-  writePosition();
-  root.dataset.moving = "false";
-  root.dataset.fanOpen = "false";
-  root.dataset.suppressed = String(Boolean(isSuppressed()));
-  if (isSuppressed()) {
-    root.dataset.suppressed = "true";
-    send({ type: "SUSPEND" });
-  } else if (paused) send({ type: "PAUSE" });
-  else {
-    root.dataset.moruState = "idle";
-    scheduleIdle();
+  function hover(event) {
+    if (
+      memory.entered &&
+      event.pointerType === "mouse" &&
+      event.target.closest?.(".moru-trigger")
+    ) {
+      activity();
+      send({ type: "HOVER" });
+    }
   }
-  window.addEventListener("scroll", scroll, { passive: true });
-  window.addEventListener("resize", resize, { passive: true });
-  window.visualViewport?.addEventListener("resize", resize, { passive: true });
-  document.addEventListener("pointermove", pointer, { passive: true });
-  document.addEventListener("pointerover", project, { passive: true });
-  document.addEventListener("pointerout", leave, { passive: true });
-  document.addEventListener("focusin", focus);
-  document.addEventListener("focusout", visibility);
-  document.addEventListener("visibilitychange", visibility);
-
+  const listeners = [
+    [window, "scroll", scroll],
+    [window, "resize", resize],
+    [document, "pointermove", pointer],
+    [document, "pointerover", project],
+    [document, "pointerout", leave],
+    [document, "pointerdown", activity],
+    [document, "keydown", activity],
+    [document, "focusin", focus],
+    [document, "focusout", visibility],
+    [document, "visibilitychange", visibility],
+    [root, "pointerover", hover],
+  ];
+  if (window.visualViewport)
+    listeners.push([window.visualViewport, "resize", resize]);
+  listeners.forEach(([target, type, fn]) =>
+    target.addEventListener(type, fn, { passive: true }),
+  );
+  resetGesture();
+  root.dataset.moruState = "idle";
+  root.dataset.moruPhase = "rest";
+  if (paused) {
+    memory.entered = true;
+    get(".moru-trigger").setAttribute("aria-pressed", "false");
+    send({ type: "PAUSE" });
+  } else get(".moru-trigger").removeAttribute("aria-pressed");
+  request();
+  if (!paused) scheduleIdle();
   return {
     fan() {
-      if (destroyed || isSuppressed() || state.value === "fanning")
+      activity();
+      if (destroyed || suppressed() || collapsed || state.value === "fanning")
         return false;
       if (paused) {
         staticFan = !staticFan;
@@ -527,33 +708,36 @@ export function createMoruController(root, { paused }) {
           scaleY: staticFan ? 1 : 0.62,
         });
         root.dataset.fanOpen = String(staticFan);
+        get(".moru-trigger").setAttribute("aria-pressed", String(staticFan));
       } else send({ type: "FAN" });
+      say(
+        paused && !staticFan
+          ? "A little rest for my feathers."
+          : "Behold my magnificent feathers!",
+        true,
+      );
       return true;
     },
     destroy() {
       destroyed = true;
-      timeline?.kill();
-      movement?.kill();
+      resetGesture();
+      bubbleTween?.kill();
       aim.tween.kill();
       gazeX.tween.kill();
       gazeY.tween.kill();
       clearTimeout(idleTimer);
+      clearTimeout(dialogueTimer);
       clearTimeout(settleTimer);
       cancelAnimationFrame(frame);
-      window.removeEventListener("scroll", scroll);
-      window.removeEventListener("resize", resize);
-      window.visualViewport?.removeEventListener("resize", resize);
-      document.removeEventListener("pointermove", pointer);
-      document.removeEventListener("pointerover", project);
-      document.removeEventListener("pointerout", leave);
-      document.removeEventListener("focusin", focus);
-      document.removeEventListener("focusout", visibility);
-      document.removeEventListener("visibilitychange", visibility);
+      listeners.forEach(([target, type, fn]) =>
+        target.removeEventListener(type, fn),
+      );
+      hideDialogue();
       gsap.killTweensOf([
-        root,
         ...Object.values(parts),
         ...feathers,
         ...particles,
+        bubble,
       ]);
       context.revert();
     },

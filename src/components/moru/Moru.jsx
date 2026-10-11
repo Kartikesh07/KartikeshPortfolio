@@ -20,10 +20,25 @@ export default function Moru({ paused, suspended = false }) {
     }
   });
   const [message, setMessage] = useState("");
+  // Survives effect restarts (pause, dialogs, StrictMode), but resets on reload.
+  const memory = useRef({
+    entered: !visible,
+    lastDialogue: -Infinity,
+    lastActivity: performance.now(),
+    lastContext: "home",
+  });
   useEffect(() => {
-    if (suspended || !root.current) return;
+    if (suspended) {
+      memory.current.entered = true;
+      return;
+    }
+    if (!root.current) return;
     controller.current = visible
-      ? createMoruController(root.current, { paused: motionStopped })
+      ? createMoruController(root.current, {
+          paused: motionStopped,
+          memory: memory.current,
+          announce: setMessage,
+        })
       : createMoruDock(root.current);
     return () => {
       controller.current?.destroy();
@@ -37,6 +52,7 @@ export default function Moru({ paused, suspended = false }) {
     }
   }, [visible, suspended]);
   function toggle() {
+    memory.current.entered = true;
     const next = !visible;
     restoreFocus.current = true;
     setVisible(next);
@@ -48,12 +64,7 @@ export default function Moru({ paused, suspended = false }) {
     }
   }
   function fan() {
-    if (controller.current?.fan?.())
-      setMessage(
-        motionStopped
-          ? "Moru's feathers changed without animation."
-          : "Moru is showing his feathers.",
-      );
+    controller.current?.fan?.();
   }
   return (
     <>
@@ -70,6 +81,7 @@ export default function Moru({ paused, suspended = false }) {
                 title="Say hello to Moru — tap to fan his feathers"
               />
             </div>
+            <div className="moru-dialogue" aria-hidden="true" hidden />
             <button
               ref={toggleButton}
               className="moru-toggle"
@@ -78,6 +90,11 @@ export default function Moru({ paused, suspended = false }) {
               aria-controls="moru-artwork"
             >
               <span>Moru</span>
+              <Feather
+                className="moru-compact-icon"
+                size={18}
+                aria-hidden="true"
+              />
               <X size={12} aria-hidden="true" />
             </button>
             <span id="moru-hint" className="sr-only">
@@ -96,7 +113,7 @@ export default function Moru({ paused, suspended = false }) {
             aria-label="Show Moru"
           >
             <Feather size={15} aria-hidden="true" />
-            Show Moru
+            <span className="moru-show-label">Show Moru</span>
           </button>
         ))}
       <span className="sr-only" role="status">
