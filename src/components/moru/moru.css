@@ -130,9 +130,11 @@
 .moru-trigger:disabled {
   pointer-events: none;
 }
-.moru-companion[data-suppressed="true"] {
+
+.moru-companion[data-suppressed="true"] .moru-dialogue {
   visibility: hidden;
 }
+
 @media (max-width: 600px) {
   .moru-companion,
   .moru-show {
