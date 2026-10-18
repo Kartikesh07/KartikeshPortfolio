@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="580" viewBox="0 0 720 580" fill="none">
+<defs>
+ <linearGradient id="bg" x2="1" y2="1"><stop stop-color="#087457"/><stop offset="1" stop-color="#064b3e"/></linearGradient>
+ <linearGradient id="steel" x1="0" x2="1" y2=".7"><stop stop-color="#e8e7d8"/><stop offset=".35" stop-color="#889e98"/><stop offset=".55" stop-color="#d7dfce"/><stop offset="1" stop-color="#6e8c87"/></linearGradient>
+ <radialGradient id="heat"><stop stop-color="#ffcb48"/><stop offset=".2" stop-color="#f9a741"/><stop offset=".47" stop-color="#f15382" stop-opacity=".95"/><stop offset=".72" stop-color="#cb48aa" stop-opacity=".8"/><stop offset="1" stop-color="#416eea" stop-opacity="0"/></radialGradient>
+ <pattern id="grain" width="6" height="7" patternUnits="userSpaceOnUse"><path d="M0 1H6M2 4H5" stroke="#fff8eb" opacity=".17" stroke-width=".7"/></pattern>
+ <g id="plate"><path d="M0 0H227V236H0Z" fill="url(#steel)"/><path d="M0 0H227V236H0Z" fill="url(#grain)"/><path d="M44 29L68 55L56 86L79 119L69 151L96 183M131 41L117 69L140 88L125 117L141 148L130 173L156 209M185 52L172 77L184 100L163 132L182 166" stroke="#3a514e" stroke-width="3"/><path d="M47 29L71 55L59 86L82 119L72 151L99 183M134 41L120 69L143 88L128 117L144 148L133 173L159 209M188 52L175 77L187 100L166 132L185 166" stroke="#f0f1de" stroke-opacity=".6" stroke-width="1.5"/></g>
+</defs>
+<path fill="url(#bg)" d="M0 0H720V580H0Z"/><text x="43" y="91" font-family="Arial,sans-serif" font-size="64" font-weight="900" letter-spacing="-4" fill="#fff2cf">Surface to signal.</text><text x="46" y="121" font-family="Arial,sans-serif" font-size="14" fill="#e4e9ce">Computer vision, with a little explanation.</text>
+<g stroke="#c7e9cc" opacity=".12"><path d="M45 178H675M45 228H675M45 278H675M45 328H675M45 378H675M45 428H675M45 478H675M70 172V485M120 172V485M170 172V485M220 172V485M270 172V485M320 172V485M370 172V485M420 172V485M470 172V485M520 172V485M570 172V485M620 172V485"/></g>
+<ellipse cx="334" cy="470" rx="248" ry="28" fill="#003b31" opacity=".45"/>
+<g transform="translate(112 201) rotate(-12 110 120)"><path d="M0 12L14 0H241V236L227 250H0Z" fill="#233b37"/><use href="#plate"/><path d="M0 236H227L241 222V236L227 250H0Z" fill="#586e63"/><g stroke="#fff7d4" stroke-width="2"><path d="M-8 24V-8H24M203-8H235V24M-8 212V244H24M203 244H235V212"/></g></g>
+<path d="M307 330C366 329 330 246 393 246" stroke="#ffcd50" stroke-width="2" stroke-dasharray="5 6"/>
+<g transform="translate(331 224) rotate(9 112 118)"><path d="M0 12L14 0H241V236L227 250H0Z" fill="#003f34"/><use href="#plate"/><path d="M0 0H227V236H0Z" fill="#3658d9" opacity=".3"/><ellipse cx="75" cy="113" rx="62" ry="96" fill="url(#heat)" transform="rotate(-16 75 113)"/><ellipse cx="145" cy="108" rx="53" ry="77" fill="url(#heat)"/><path d="M0 236H227L241 222V236L227 250H0Z" fill="#385269"/><rect x="-2" y="-2" width="231" height="240" stroke="#ffcd50" stroke-width="2"/></g>
+<g stroke="#ffcd50" stroke-width="1.4"><path d="M570 287H608V226H640M608 287V267H640M608 287V308H640M608 287V349H640M608 349V390H640M608 390V431H640"/></g>
+<g fill="#fff3d0"><circle cx="649" cy="226" r="5"/><circle cx="649" cy="267" r="5"/><circle cx="649" cy="308" r="5"/><circle cx="649" cy="390" r="5"/><circle cx="649" cy="431" r="5"/></g><circle cx="649" cy="349" r="11" fill="#ef598d" stroke="#ffcd50" stroke-width="2"/>
+<text x="99" y="175" font-family="Arial,sans-serif" font-size="12" fill="#fff2cf">Steel texture</text><path d="M151 180V198" stroke="#fff2cf"/><text x="386" y="201" font-family="Arial,sans-serif" font-size="12" fill="#fff2cf">Grad-CAM interpretation</text><path d="M436 205V226" stroke="#fff2cf"/>
+<path d="M45 527H675" stroke="#bed1b8" opacity=".5"/><text x="45" y="552" font-family="Arial,sans-serif" font-size="12" fill="#fff2cf">VisionForge / Classification, made visible</text><text x="577" y="552" font-family="Arial,sans-serif" font-size="12" fill="#fff2cf">PyTorch + XAI</text>
+</svg>

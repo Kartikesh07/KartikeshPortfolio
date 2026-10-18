@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="580" viewBox="0 0 720 580" fill="none">
+<defs>
+ <linearGradient id="stage" x1="0" y1="0" x2="720" y2="580" gradientUnits="userSpaceOnUse"><stop stop-color="#345def"/><stop offset="1" stop-color="#2038ac"/></linearGradient>
+ <linearGradient id="metal" x1="0" y1="0" x2="70" y2="110" gradientUnits="userSpaceOnUse"><stop stop-color="#fff7de"/><stop offset=".48" stop-color="#e4b4c4"/><stop offset="1" stop-color="#c95489"/></linearGradient>
+ <linearGradient id="foot" x1="-55" y1="0" x2="55" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#f480ac"/><stop offset="1" stop-color="#b82d6f"/></linearGradient>
+ <radialGradient id="light"><stop stop-color="#80dffb" stop-opacity=".48"/><stop offset="1" stop-color="#80dffb" stop-opacity="0"/></radialGradient>
+ <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="7"/></filter>
+ <g id="node"><ellipse cy="80" rx="75" ry="22" fill="#121f6a" opacity=".5"/><path d="M-52 35V67C-52 92 52 92 52 67V35" fill="url(#foot)"/><ellipse cy="35" rx="52" ry="20" fill="#f39bc0"/><ellipse cy="35" rx="39" ry="14" fill="#ba386f"/><path d="M-21 33V-40L0-52L21-40V33L0 44Z" fill="url(#metal)"/><path d="M0-52V44L21 33V-40Z" fill="#f6c04b"/><path d="M-21-40L0-28L21-40" stroke="#fff8eb" stroke-width="2"/><ellipse cy="-45" rx="26" ry="10" fill="#ffe8a6"/><ellipse cy="-47" rx="17" ry="6" fill="#fff8eb"/><ellipse cy="35" rx="39" ry="14" stroke="#ffd15b" stroke-width="2"/><path d="M-40 58V67M-30 63V73M-19 67V76M-7 69V78M7 69V78M20 67V76M31 63V73M41 58V67" stroke="#f9a4b9" stroke-width="2"/></g>
+</defs>
+<path fill="url(#stage)" d="M0 0H720V580H0Z"/><circle cx="390" cy="330" r="260" fill="url(#light)"/>
+<g opacity=".12" stroke="#d8e5ff"><path d="M-80 510L440 210M-20 560L500 260M100 580L620 280M220 580L740 280M-50 320L470 620M60 275L580 575M170 230L690 530M280 185L800 485"/></g>
+<text x="43" y="91" font-family="Arial,sans-serif" font-size="64" font-weight="900" letter-spacing="-4" fill="#dbe7ff">Pass the spark.</text><text x="46" y="121" font-family="Arial,sans-serif" font-size="14" fill="#dbe7ff">Connected targets. Cascading electricity.</text>
+<g stroke="#a9c5ff" opacity=".35"><ellipse cx="376" cy="376" rx="272" ry="129"/><ellipse cx="376" cy="376" rx="235" ry="105" stroke-dasharray="3 8"/><path d="M89 376H662M376 236V513" stroke-dasharray="3 8"/></g>
+<use href="#node" transform="translate(358 247) scale(.68)"/><use href="#node" transform="translate(571 343) scale(.85)"/><use href="#node" transform="translate(158 351) scale(.9)"/><use href="#node" transform="translate(365 433) scale(1.13)"/>
+<g stroke="#60dcff" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)"><path d="M158 308L203 258L226 281L273 235L295 250L358 217L409 267L434 250L489 291L509 273L571 305"/><path d="M158 308L211 364L239 345L282 400L307 377L365 380L435 352L449 367L507 321L526 334L571 305"/></g>
+<g stroke="#ffcb46" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><path d="M158 308L203 258L226 281L273 235L295 250L358 217L409 267L434 250L489 291L509 273L571 305"/><path d="M158 308L211 364L239 345L282 400L307 377L365 380L435 352L449 367L507 321L526 334L571 305"/></g>
+<g stroke="#fff8eb" stroke-width="2" stroke-linejoin="round"><path d="M158 308L203 258L226 281L273 235L295 250L358 217L409 267L434 250L489 291L509 273L571 305"/><path d="M158 308L211 364L239 345L282 400L307 377L365 380L435 352L449 367L507 321L526 334L571 305"/></g>
+<g fill="#fff8eb"><circle cx="158" cy="308" r="6"/><circle cx="358" cy="217" r="5"/><circle cx="571" cy="305" r="6"/><circle cx="365" cy="380" r="8"/></g>
+<g stroke="#ffcd50" stroke-width="2"><path d="M141 288L130 279M144 312L129 317M169 291L176 277M349 199L343 188M367 201L377 190M583 292L595 283M587 310L604 315M352 363L342 349M379 364L389 353"/></g>
+<g stroke="#bdd8ff" stroke-width="1.5"><path d="M119 349L77 376V412H45M597 366L647 393V435H675"/><circle cx="119" cy="349" r="3"/><circle cx="597" cy="366" r="3"/></g>
+<text x="44" y="438" fill="#dbe7ff" font-family="Arial,sans-serif" font-size="12">Conduct</text><text x="621" y="458" fill="#dbe7ff" font-family="Arial,sans-serif" font-size="12">Propagate</text>
+<path d="M45 527H675" stroke="#8ca6f9" opacity=".5"/><text x="45" y="552" font-family="Arial,sans-serif" font-size="12" fill="#dbe7ff">ArcChain / Electricity in motion</text><path d="M655 545H675M667 537L675 545L667 553" stroke="#ffcd50" stroke-width="2"/>
+</svg>

@@ -1,47 +1,52 @@
-# Festive Indian pop-art portfolio
+# Indian Neo-Pop portfolio
 
-Implemented on 2026-10-11 following the user's direction: a complete visual rebuild with festive, playful Indian pop art and original 3D artwork.
+Updated 18 October 2026. This editorial redesign supersedes the earlier handheld-console and mascot presentation. It retains React 18, Vite 5, React Three Fiber 8, Three.js 0.160, GSAP 3, and Framer Motion 11. No dependencies were added.
 
-## Visual identity
+## Art direction
 
-- Warm paper background, deep green typography, rani pink, marigold yellow, cobalt blue, and terracotta accents.
-- Bricolage Grotesque headlines, DM Sans body text, and restrained italic serif accents. Fonts load through Google Fonts with local fallback stacks.
-- Kite shapes, floral rosettes, a sunburst, sign-painter-inspired lettering, and printed-poster compositions bring cultural character without religious imagery or a collage of unrelated regional styles.
-- The hero's pink handheld console, pixel flower, kite, and sculptural ornaments connect the owner's game-development work to the playful identity. Geometry is authored locally in React Three Fiber; no remote model assets are required.
-- Project artwork is original illustration, except the actual Cyber Run gameplay image. Illustrations must not be described as screenshots of shipped interfaces.
+The opening pairs oversized, tightly spaced Bricolage Grotesque type with an original sculptural rosette and orbital ring. DM Sans handles reading and interface text. Cream (#fff8eb), rani pink (#ef598d), marigold (#ffcb46), cobalt (#284ce4), and emerald (#086b50) define the palette; deep green ink (#19382d) anchors text. Broad whitespace, staggered project compositions, and full-width colour sections replace the previous poster-wall styling.
 
-## Structure and editing
+The flower is a restrained reference to the established Indian pop-art identity. No stock imagery, remote 3D models, project simulations, or fabricated performance metrics are used.
 
-- `src/App.jsx`: navigation, sections, project dialogs, motion control, and contact form.
-- `src/data/portfolio.js`: project content, links, technologies, and experience history.
-- `src/components/pop/Illustrations.jsx`: reusable SVG and project poster compositions.
-- `src/components/pop/HeroArtwork.jsx`: lazy loading, visibility handling, WebGL detection, and static fallback.
-- `src/components/pop/PlayScene.jsx`: 3D geometry, lighting, and animation.
-- `src/components/pop/Reveal.jsx`: once-per-visit scroll entrances.
-- `src/components/pop/ProjectCard.jsx`: spring-based pointer tilt, tap feedback, and animated grid changes.
-- `src/index.css`: design tokens, layouts, responsive rules, and reduced-motion styles.
-- `public/flower.svg`: matching favicon.
+## Files and content
 
-The portrait is an optimized local derivative of the existing source photograph. Original source images remain available in the repository. Personal facts and employment dates are retained from the prior portfolio; update the data file when these change. Links without a verified individual project destination explicitly lead to the owner's GitHub profile.
+- `src/App.jsx`: sticky navigation, accessible project dialogs, About, Skills, Experience, contact form, and motion control.
+- `src/data/portfolio.js`: exactly Cyber Run, ArcChain, Reactive Energy Shield, and VisionForge; retained employment facts.
+- `src/components/pop/Illustrations.jsx`: project art selection and the static hero fallback.
+- `src/assets/arcchain.svg`: original branching electricity and conductor composition.
+- `src/assets/reactive-shield.svg`: original impact ripple, hexagonal shield, energy indicator, and fracture composition.
+- `src/assets/visionforge.svg`: original steel texture, heatmap, and classification composition. This represents the project concept; it is not a real model output or screenshot.
+- `src/assets/hero-sculpture.svg`: locally authored fallback for the 3D sculpture.
+- `src/components/pop/PlayScene.jsx`: procedural extruded rosette, orbital torus, and supporting forms.
+- `src/components/pop/HeroArtwork.jsx`: independent lazy loading, WebGL fallback, context-loss handling, and visibility-aware rendering.
+- `src/components/pop/usePortfolioMotion.js`: scoped GSAP entrance, text reveals, and desktop scroll parallax.
+- `src/components/pop/Magnetic.jsx`: small pointer-driven spring displacement for the main call to action.
+- `src/components/pop/ProjectCard.jsx`: mouse-only spring tilt, artwork hover, and project entry points.
+- `src/index.css`: tokens, responsive layouts, interaction states, and reduced-motion styles.
+- `index.html`: page metadata and existing font loading.
 
-## Interaction and accessibility
+Cyber Run preserves the prior description, details, and actual gameplay image. The other three visuals are explicitly identified as original illustrations. Verified project destinations are `kartikesh007.itch.io/cyber-run`, `github.com/Kartikesh07/ArcChain`, `github.com/Kartikesh07/ReactiveShield`, and `github.com/Kartikesh07/VisionForge`. VisionForge describes classification and Grad-CAM, not segmentation or a validated industrial product.
 
-The page uses native links, buttons, a modal dialog, and expandable experience details. Project filters announce their result count. Dialog dismissal restores focus to its opener. Mobile navigation supports Escape. The form has visible labels, required-field and email validation, and live status messages. A skip link and visible focus outlines support keyboard navigation.
+## Motion and accessibility
 
-Reduced motion is respected on initial load and when the OS preference changes. A visible motion button allows manual control. The 3D scene stops its continuous frame loop when paused, offscreen, or in a hidden tab. Pixel ratio is capped at 1.5; the Three.js scene loads separately from the main application. A CSS/SVG console composition remains available when WebGL cannot initialize or its context is lost.
+The hero is decorative and has no game controls. GSAP handles the coordinated text entrance and scroll triggers; Framer Motion handles responsive springs and selected section entrances. Native scrolling is preserved without pinning or scroll hijacking. Scroll parallax is limited to desktop.
 
-The console is interactive: three swatches change its shell colour, Press play cycles between flower, kite, and heart pixel art, and Spin turns the composition. The blue and yellow buttons on the 3D model also cycle the display. A short flower burst accompanies play when motion is enabled. All these actions have equivalent keyboard-accessible DOM controls. The static fallback responds to colour, screen, and spin choices too. Pausing disables Spin, removes bursts, and restores a front-facing console while keeping colour and display changes available.
+The header motion control pauses GSAP, CSS animation, magnetic motion, card tilt, and continuous WebGL rendering. OS reduced-motion changes are respected. Reduced-motion scrolling uses an explicit CSS override because ScrollTrigger may restore an inline scroll-behavior value during cleanup. The canvas uses demand rendering when paused, offscreen, or in a hidden tab, with DPR capped at 1.5. Its geometry and material complexity is intentionally bounded; the Three.js chunk is loaded separately.
 
-Hero entrances, drawn underlines, staggered section reveals, spring-based project tilt, filter transitions, dialog entrances, and smaller hover/tap feedback use the existing Framer Motion dependency and CSS. Tilt is limited to mouse pointers; touch scrolling is preserved. Manual pause disables CSS animations, tilt, animated layout changes, and smooth scrolling. Avoid adding scroll hijacking or making navigation wait for an animation to finish.
+Navigation is semantic and highlights the visible section. Mobile navigation supports Escape and closes after selection. Native project dialogs trap focus, dismiss on Escape/backdrop, and restore focus to their opening button. The site retains a skip link, visible keyboard focus, image alternatives, and native experience accordions. Project content remains readable independently of WebGL.
 
-## Contact delivery
+## Contact and companion
 
-The existing FormSubmit AJAX destination is preserved. Requests time out after 15 seconds; failures retain the visitor's text and provide an email-app fallback. Successful responses clear the form. Delivery depends on the existing FormSubmit account activation and service availability. Browser QA checks local required-field validation without sending an email.
+The original FormSubmit AJAX destination, timeout, submission feedback, retained text on failure, email fallback, copy-email control, and social links are preserved. Form inputs retain visible labels, native required/email validation, and autocomplete. Browser validation should not send an actual email unless specifically requested.
 
-## Moru companion
+Moru is temporarily disabled. Its React lazy/Suspense imports, lazy initialization, and rendering are commented out in `App.jsx`. All `src/components/moru/` files are preserved; restore those comments to reactivate it.
 
-Moru extends the festive identity with an original SVG peacock and the same five core colours. Its independently animated parts use GSAP, a prioritised state machine and finite idle timers. The companion respects motion preferences, yields to dialogs and form focus, and provides keyboard-accessible fan and hide/show controls. Implementation and validation details are in `moru-mascot.md`.
+## Skills and references
 
-## Research references
+Applied the local scoped-code-change skill, Anthropic frontend-design guidance, Vercel Web Interface Guidelines, and Sites presentation-led design guidance. Existing research was reused; no external skills were installed. The MetaMask reference informed scale, spacing, sculptural presence, and colour blocking rather than page content or assets. GSAP ScrollTrigger and R3F performance APIs were checked against official documentation and the installed stack.
 
-The researched skills and cultural sources are recorded in `portfolio-design-research.md` and `indian-pop-art-rebuild-brief.md`. External skills were studied, not installed. This implementation applies their guidance on distinctive art direction, typography, hierarchy, responsive behavior, accessibility, and economical React Three Fiber rendering.
+- https://github.com/anthropics/skills/blob/main/skills/frontend-design/SKILL.md
+- https://github.com/vercel-labs/web-interface-guidelines/blob/main/command.md
+- https://gsap.com/docs/v3/Plugins/ScrollTrigger/
+- https://r3f.docs.pmnd.rs/advanced/scaling-performance
+- https://metamask.io/
