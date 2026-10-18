@@ -5,6 +5,26 @@
     <link rel="icon" type="image/svg+xml" href="./flower.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#fff8eb" />
+    <style>
+      html { background: #fff8eb; scrollbar-gutter: stable; }
+      html[data-intro="pending"] { background: #086b50; overflow: hidden; }
+    </style>
+    <script>
+      // Decide before the first paint; storage failures leave the portfolio accessible.
+      try {
+        const key = "kartikesh:intro-seen:v1";
+        const seen = sessionStorage.getItem(key);
+        const navigation = performance.getEntriesByType("navigation")[0];
+        const returning = navigation && ["reload", "back_forward"].includes(navigation.type);
+        const anchored = location.hash && location.hash !== "#home";
+        if (!seen && !returning && !anchored && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+          document.documentElement.dataset.intro = "pending";
+        }
+        sessionStorage.setItem(key, "1");
+      } catch {
+        delete document.documentElement.dataset.intro;
+      }
+    </script>
     <title>Kartikesh Belamkar — Made to move you.</title>
     <meta
       name="description"

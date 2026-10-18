@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 // import { lazy, Suspense } from "react"; // Restore when reactivating Moru.
 import { MotionConfig } from "framer-motion";
 import { ArrowDown, ArrowUpRight, Check, ChevronDown, Code2, Copy, Gamepad2, Github, Linkedin, Menu, Pause, Play, X } from "lucide-react";
@@ -8,6 +8,7 @@ import ProjectCard from "./components/pop/ProjectCard";
 import { Flower, ProjectArt } from "./components/pop/Illustrations";
 import Magnetic from "./components/pop/Magnetic";
 import usePortfolioMotion from "./components/pop/usePortfolioMotion";
+import IntroScreen from "./components/pop/IntroScreen";
 import { projects, experience } from "./data/portfolio";
 import portrait from "./assets/portrait.jpg";
 const email = "kartibelamkar@gmail.com";
@@ -204,6 +205,10 @@ function Contact({
   </section>;
 }
 export default function App() {
+  const [introPhase, setIntroPhase] = useState(() => document.documentElement.dataset.intro === "pending" ? "playing" : "complete");
+  const introActive = introPhase !== "complete";
+  const revealPortfolio = useCallback(() => setIntroPhase("revealing"), []);
+  const completeIntro = useCallback(() => setIntroPhase("complete"), []);
   const [menuOpen, setMenuOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
   const [activeSection, setActiveSection] = useState("home");
@@ -211,7 +216,7 @@ export default function App() {
   const root = useRef(null);
   const menuButton = useRef(null);
   const projectTrigger = useRef(null);
-  usePortfolioMotion(root, motionPaused);
+  usePortfolioMotion(root, motionPaused, introPhase !== "playing");
   function openProject(project, event) {
     projectTrigger.current = event.currentTarget;
     setSelectedProject(project);
@@ -254,7 +259,7 @@ export default function App() {
   }, [menuOpen]);
   const navigation = [["work", "Work"], ["about", "About"], ["skills", "Expertise"], ["experience", "Experience"]];
   return <MotionConfig reducedMotion={motionPaused ? "always" : "user"}>
-    <div ref={root} className={`portfolio ${motionPaused ? "motion-paused" : ""}`}>
+    <div ref={root} aria-hidden={introActive || undefined} className={`portfolio ${motionPaused ? "motion-paused" : ""}`}>
       <a className="skip-link" href="#main">Skip to content</a>
       <header className="site-header">
         <div className="page-width header-inner">
@@ -283,7 +288,7 @@ export default function App() {
           </div>
           <div className="hero-main">
             <div className="hero-copy">
-              <h1 id="hero-heading">
+              <h1 id="hero-heading" tabIndex={-1}>
                 <span className="hero-line">
                   <span>Made to</span>
                 </span>
@@ -299,7 +304,7 @@ export default function App() {
             </div>
             <div className="hero-visual">
               <div className="hero-art-shift">
-                <HeroArtwork paused={motionPaused} />
+                <HeroArtwork paused={motionPaused || introPhase === "playing"} />
               </div>
               <span className="art-caption">Form, colour & a little curiosity.</span>
             </div>
@@ -474,5 +479,7 @@ export default function App() {
        </Suspense>
        */}
     </div>
+    {/* Mount after the page so its ref is attached before scroll/focus locking. */}
+    {introActive && <IntroScreen contentRef={root} onReveal={revealPortfolio} onComplete={completeIntro} />}
   </MotionConfig>;
 }

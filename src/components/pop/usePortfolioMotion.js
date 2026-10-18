@@ -1,12 +1,13 @@
-import { useEffect } from "react";
+import { useLayoutEffect } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 gsap.registerPlugin(ScrollTrigger);
-export default function usePortfolioMotion(root, paused) {
-  useEffect(() => {
+export default function usePortfolioMotion(root, paused, ready = true) {
+  useLayoutEffect(() => {
     if (paused) return;
     const context = gsap.context(() => {
       const entrance = gsap.timeline({
+        paused: !ready,
         defaults: {
           ease: "power3.out"
         }
@@ -27,6 +28,9 @@ export default function usePortfolioMotion(root, paused) {
         rotate: -8,
         duration: 1.3
       }, 0.1);
+      // Prepare the entrance behind the curtain; start it at the reveal cue.
+      // Scroll effects are registered only once the page is being revealed.
+      if (!ready) return;
       const media = gsap.matchMedia();
       media.add("(min-width: 800px)", () => {
         gsap.to(".hero-art-shift", {
@@ -78,5 +82,5 @@ export default function usePortfolioMotion(root, paused) {
       };
     }, root);
     return () => context.revert();
-  }, [root, paused]);
+  }, [root, paused, ready]);
 }
